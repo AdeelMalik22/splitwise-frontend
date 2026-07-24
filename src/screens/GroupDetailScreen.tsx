@@ -1,14 +1,15 @@
 import React, { useCallback, useState } from "react";
-import { View, Text, FlatList, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Text, FlatList, ActivityIndicator, StyleSheet, Keyboard, Alert } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/RootNavigator";
-import { getGroup } from "../api/groups";
+import { getGroup, addMember } from "../api/groups";
 import { listExpenses } from "../api/expenses";
 import { Group, Expense } from "../types/models";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
-import { Receipt } from "lucide-react-native";
+import { Input } from "../components/ui/Input";
+import { Receipt, UserPlus } from "lucide-react-native";
 import { colors } from "../theme";
 
 type Props = NativeStackScreenProps<RootStackParamList, "GroupDetail">;
@@ -18,6 +19,10 @@ export default function GroupDetailScreen({ route, navigation }: Props) {
   const [group, setGroup] = useState<Group | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [newMemberId, setNewMemberId] = useState("");
+  const [addingMember, setAddingMember] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -37,6 +42,27 @@ export default function GroupDetailScreen({ route, navigation }: Props) {
     }, [load])
   );
 
+  async function handleAddMember() {
+    const uid = parseInt(newMemberId.trim(), 10);
+    if (isNaN(uid)) {
+      Alert.alert("Invalid ID", "Please enter a valid numeric User ID.");
+      return;
+    }
+    setAddingMember(true);
+    Keyboard.dismiss();
+    try {
+      await addMember(groupId, uid);
+      Alert.alert("Success", "Member added to group!");
+      setNewMemberId("");
+      setShowAddMember(false);
+      load();
+    } catch (err) {
+      Alert.alert("Error", "Could not add user. Make sure the ID is correct.");
+    } finally {
+      setAddingMember(false);
+    }
+  }
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -47,12 +73,16 @@ export default function GroupDetailScreen({ route, navigation }: Props) {
           <View style={styles.header}>
             <View style={styles.headerTop}>
               <Text style={styles.title}>{route.params.groupName}</Text>
-              <Text style={styles.subtitle}>{group?.members?.length || 0} members</Text>
+              <Text style={styles.subtitle}>Track shared expenses</Text>
             </View>
 
             <View style={styles.actions}>
               <Button title="Settle Up" variant="secondary" style={styles.actionBtn} onPress={() => navigation.navigate("Settlements", { groupId })} />
               <Button title="Add Expense" style={styles.actionBtn2} onPress={() => navigation.navigate("AddExpense", { groupId })} />
+            </View>
+
+            <View style={{ marginTop: 16 }}>
+               <Button title="Add Member" variant="secondary" onPress={() => setShowAddMember(true)} />
             </View>
           </View>
         }
@@ -80,11 +110,28 @@ export default function GroupDetailScreen({ route, navigation }: Props) {
             </View>
             <View style={styles.cardAmountBox}>
               <Text style={styles.cardAmount}>₹{item.amount}</Text>
-              <Text style={styles.cardAmountLabel}>Lent</Text>
             </View>
           </Card>
         )}
       />
+
+      {showAddMember && (
+        <View style={styles.bottomSheet}>
+          <Text style={styles.sheetTitle}>Add Member</Text>
+          <Input 
+            label="USER ID"
+            keyboardType="number-pad" 
+            value={newMemberId} 
+            onChangeText={setNewMemberId} 
+            placeholder="Enter their User ID" 
+            autoFocus 
+          />
+          <View style={styles.sheetActions}>
+            <Button title="Cancel" variant="secondary" style={styles.cancelBtn} onPress={() => { setShowAddMember(false); setNewMemberId(""); Keyboard.dismiss(); }} />
+            <Button title="Add" loading={addingMember} style={{ flex: 1 }} onPress={handleAddMember} />
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -109,6 +156,9 @@ const styles = StyleSheet.create({
   cardTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: "bold", marginBottom: 4 },
   cardSubtitle: { color: colors.textSecondary, fontSize: 14 },
   cardAmountBox: { alignItems: "flex-end" },
-  cardAmount: { color: colors.success, fontSize: 16, fontWeight: "bold", marginBottom: 4 },
-  cardAmountLabel: { color: colors.textMuted, fontSize: 12, textTransform: "uppercase", letterSpacing: 1 },
+  cardAmount: { color: colors.textPrimary, fontSize: 16, fontWeight: "bold", marginBottom: 4 },
+  bottomSheet: { position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: colors.secondaryBg, borderWidth: 1, borderColor: colors.border, padding: 24, paddingBottom: 48, borderTopLeftRadius: 24, borderTopRightRadius: 24, shadowColor: "#000", shadowOffset: { width: 0, height: -10 }, shadowOpacity: 0.5, shadowRadius: 20, elevation: 10 },
+  sheetTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: "bold", marginBottom: 16 },
+  sheetActions: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
+  cancelBtn: { flex: 1, marginRight: 16 },
 });

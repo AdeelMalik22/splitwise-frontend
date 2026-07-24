@@ -23,3 +23,8 @@ export async function addMember(groupId: number, userId: number) {
   return data;
 }
 
+export async function getGroupUsers(groupId: number) {
+  const { data } = await api.get<User[]>(`/usersgroup/${groupId}/users/`);
+  return data;
+}
+
