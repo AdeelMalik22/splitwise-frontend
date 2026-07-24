@@ -1,20 +1,21 @@
 import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, DarkTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ActivityIndicator, View } from "react-native";
 import { useAuth } from "../context/AuthContext";
 
 import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
-import GroupListScreen from "../screens/GroupListScreen";
+import TabNavigator from "./TabNavigator";
 import GroupDetailScreen from "../screens/GroupDetailScreen";
 import AddExpenseScreen from "../screens/AddExpenseScreen";
 import SettlementsScreen from "../screens/SettlementsScreen";
-import ProfileScreen from "../screens/ProfileScreen";
 
 export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
+  MainTabs: undefined;
+  Dashboard: undefined;
   GroupList: undefined;
   GroupDetail: { groupId: number; groupName: string };
   AddExpense: { groupId: number };
@@ -24,26 +25,45 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+const MyDarkTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    background: "#000000",
+    card: "#0B0B0B",
+    text: "#FFFFFF",
+    border: "#202020",
+  },
+};
+
 export default function RootNavigator() {
   const { isLoading, isAuthenticated } = useAuth();
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#1CC29F" />
+      <View style={{ flex: 1, backgroundColor: "#000000", justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#FFFFFF" />
       </View>
     );
   }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerTitleStyle: { fontWeight: "700" } }}>
+    <NavigationContainer theme={MyDarkTheme}>
+      <Stack.Navigator
+        screenOptions={{
+          headerStyle: { backgroundColor: "#000000" },
+          headerTintColor: "#FFFFFF",
+          headerTitleStyle: { fontWeight: "700" },
+          headerShadowVisible: false,
+          headerBackTitleVisible: false,
+        }}
+      >
         {isAuthenticated ? (
           <>
             <Stack.Screen
-              name="GroupList"
-              component={GroupListScreen}
-              options={{ title: "Your Groups" }}
+              name="MainTabs"
+              component={TabNavigator}
+              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="GroupDetail"
@@ -53,17 +73,12 @@ export default function RootNavigator() {
             <Stack.Screen
               name="AddExpense"
               component={AddExpenseScreen}
-              options={{ title: "Add Expense" }}
+              options={{ title: "Add Expense", presentation: "modal" }}
             />
             <Stack.Screen
               name="Settlements"
               component={SettlementsScreen}
-              options={{ title: "Who Owes Who" }}
-            />
-            <Stack.Screen
-              name="Profile"
-              component={ProfileScreen}
-              options={{ title: "Profile" }}
+              options={{ title: "Settlements" }}
             />
           </>
         ) : (
@@ -76,7 +91,7 @@ export default function RootNavigator() {
             <Stack.Screen
               name="Register"
               component={RegisterScreen}
-              options={{ title: "Create Account" }}
+              options={{ headerShown: false, presentation: "modal" }}
             />
           </>
         )}

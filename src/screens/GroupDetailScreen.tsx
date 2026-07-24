@@ -1,13 +1,15 @@
 import React, { useCallback, useState } from "react";
-import { Alert, FlatList, StyleSheet, Text, View } from "react-native";
+import { View, Text, FlatList, ActivityIndicator, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/RootNavigator";
 import { getGroup } from "../api/groups";
 import { listExpenses } from "../api/expenses";
 import { Group, Expense } from "../types/models";
-import { colors, spacing } from "../theme";
-import PrimaryButton from "../components/PrimaryButton";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { Receipt } from "lucide-react-native";
+import { colors } from "../theme";
 
 type Props = NativeStackScreenProps<RootStackParamList, "GroupDetail">;
 
@@ -19,14 +21,11 @@ export default function GroupDetailScreen({ route, navigation }: Props) {
 
   const load = useCallback(async () => {
     try {
-      const [g, exp] = await Promise.all([
-        getGroup(groupId),
-        listExpenses(groupId),
-      ]);
+      const [g, exp] = await Promise.all([getGroup(groupId), listExpenses(groupId)]);
       setGroup(g);
       setExpenses(exp);
     } catch {
-      Alert.alert("Error", "Could not load this group.");
+      // Handle error
     } finally {
       setLoading(false);
     }
@@ -40,45 +39,50 @@ export default function GroupDetailScreen({ route, navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.actionsRow}>
-        <PrimaryButton
-          title="Add Expense"
-          onPress={() => navigation.navigate("AddExpense", { groupId })}
-          style={{ flex: 1, marginRight: spacing.sm }}
-        />
-        <PrimaryButton
-          title="Settlements"
-          variant="outline"
-          onPress={() => navigation.navigate("Settlements", { groupId })}
-          style={{ flex: 1 }}
-        />
-      </View>
-
-      {group?.members?.length ? (
-        <Text style={styles.membersLine}>
-          Members: {group.members.map((m) => m.name || m.username).join(", ")}
-        </Text>
-      ) : null}
-
       <FlatList
         data={expenses}
         keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={{ padding: spacing.md }}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <View style={styles.headerTop}>
+              <Text style={styles.title}>{route.params.groupName}</Text>
+              <Text style={styles.subtitle}>{group?.members?.length || 0} members</Text>
+            </View>
+
+            <View style={styles.actions}>
+              <Button title="Settle Up" variant="secondary" style={styles.actionBtn} onPress={() => navigation.navigate("Settlements", { groupId })} />
+              <Button title="Add Expense" style={styles.actionBtn2} onPress={() => navigation.navigate("AddExpense", { groupId })} />
+            </View>
+          </View>
+        }
         ListEmptyComponent={
           !loading ? (
-            <Text style={styles.empty}>No expenses yet in this group.</Text>
-          ) : null
+            <View style={styles.emptyState}>
+              <View style={styles.emptyIconBox}>
+                <Receipt size={32} color="#FFFFFF" />
+              </View>
+              <Text style={styles.emptyTitle}>No expenses yet</Text>
+              <Text style={styles.emptyDesc}>Tap 'Add Expense' to create the first bill for this group.</Text>
+            </View>
+          ) : (
+            <ActivityIndicator color="#FFFFFF" style={{ marginTop: 80 }} />
+          )
         }
         renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.desc}>{item.name}</Text>
-              {!!item.description && (
-                <Text style={styles.subdesc}>{item.description}</Text>
-              )}
+          <Card style={styles.card}>
+            <View style={styles.cardIconBox}>
+              <Receipt size={20} color="#FFFFFF" />
             </View>
-            <Text style={styles.amount}>₹{item.amount}</Text>
-          </View>
+            <View style={styles.cardInfo}>
+              <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
+              <Text style={styles.cardSubtitle}>{item.paid_by.length > 0 ? "You paid" : "Someone paid"}</Text>
+            </View>
+            <View style={styles.cardAmountBox}>
+              <Text style={styles.cardAmount}>₹{item.amount}</Text>
+              <Text style={styles.cardAmountLabel}>Lent</Text>
+            </View>
+          </Card>
         )}
       />
     </View>
@@ -87,29 +91,24 @@ export default function GroupDetailScreen({ route, navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  actionsRow: {
-    flexDirection: "row",
-    padding: spacing.md,
-  },
-  membersLine: {
-    paddingHorizontal: spacing.md,
-    color: colors.subtext,
-    fontSize: 13,
-    marginBottom: spacing.sm,
-  },
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  desc: { fontSize: 15, fontWeight: "600", color: colors.text },
-  subdesc: { fontSize: 12, color: colors.subtext, marginTop: 2 },
-  amount: { fontSize: 15, fontWeight: "700", color: colors.primaryDark },
-  empty: { textAlign: "center", color: colors.subtext, marginTop: spacing.xl },
+  listContent: { paddingHorizontal: 24, paddingBottom: 120, paddingTop: 24 },
+  header: { marginBottom: 32 },
+  headerTop: { marginBottom: 24 },
+  title: { color: colors.textPrimary, fontSize: 36, fontWeight: "bold", letterSpacing: -1, marginBottom: 8 },
+  subtitle: { color: colors.textSecondary, fontSize: 14 },
+  actions: { flexDirection: "row" },
+  actionBtn: { flex: 1, marginRight: 16 },
+  actionBtn2: { flex: 1 },
+  emptyState: { alignItems: "center", justifyContent: "center", paddingVertical: 80, marginTop: 40 },
+  emptyIconBox: { width: 64, height: 64, backgroundColor: colors.surface, borderRadius: 32, alignItems: "center", justifyContent: "center", marginBottom: 24 },
+  emptyTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: "bold", marginBottom: 8 },
+  emptyDesc: { color: colors.textSecondary, textAlign: "center", paddingHorizontal: 32, lineHeight: 24 },
+  card: { flexDirection: "row", alignItems: "center", marginBottom: 12, padding: 16 },
+  cardIconBox: { width: 48, height: 48, backgroundColor: colors.border, borderRadius: 12, alignItems: "center", justifyContent: "center", marginRight: 16 },
+  cardInfo: { flex: 1, marginRight: 16 },
+  cardTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: "bold", marginBottom: 4 },
+  cardSubtitle: { color: colors.textSecondary, fontSize: 14 },
+  cardAmountBox: { alignItems: "flex-end" },
+  cardAmount: { color: colors.success, fontSize: 16, fontWeight: "bold", marginBottom: 4 },
+  cardAmountLabel: { color: colors.textMuted, fontSize: 12, textTransform: "uppercase", letterSpacing: 1 },
 });

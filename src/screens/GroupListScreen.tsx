@@ -1,21 +1,15 @@
 import React, { useCallback, useState } from "react";
-import {
-  Alert,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { View, Text, FlatList, RefreshControl, ActivityIndicator, Keyboard, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/RootNavigator";
 import { listGroups, createGroup } from "../api/groups";
 import { Group } from "../types/models";
-import { colors, spacing, radius, shadows, typography } from "../theme";
-import PrimaryButton from "../components/PrimaryButton";
-import LabeledInput from "../components/LabeledInput";
+import { Button } from "../components/ui/Button";
+import { PressableCard } from "../components/ui/Card";
+import { Input } from "../components/ui/Input";
+import { Users, ChevronRight, Plus } from "lucide-react-native";
+import { colors } from "../theme";
 
 type Props = NativeStackScreenProps<RootStackParamList, "GroupList">;
 
@@ -32,7 +26,7 @@ export default function GroupListScreen({ navigation }: Props) {
       const data = await listGroups();
       setGroups(data);
     } catch (err) {
-      Alert.alert("Error", "Could not load your groups.");
+      // Silent error for now
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -48,13 +42,14 @@ export default function GroupListScreen({ navigation }: Props) {
   async function handleCreateGroup() {
     if (!newGroupName.trim()) return;
     setCreating(true);
+    Keyboard.dismiss();
     try {
       await createGroup({ name: newGroupName.trim() });
       setNewGroupName("");
       setShowNewGroup(false);
       fetchGroups();
     } catch {
-      Alert.alert("Error", "Could not create the group.");
+      // Error handling
     } finally {
       setCreating(false);
     }
@@ -62,203 +57,85 @@ export default function GroupListScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerRow}>
-        <Text style={styles.screenTitle}>Your Groups</Text>
-        <Pressable 
-          onPress={() => navigation.navigate("Profile")}
-          style={({ pressed }) => [styles.profileBtn, pressed && { opacity: 0.7 }]}
-        >
-          <Text style={styles.profileEmoji}>👤</Text>
-        </Pressable>
+      <View style={styles.header}>
+        <Text style={styles.title}>Groups</Text>
       </View>
 
       <FlatList
         data={groups}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => {
-              setRefreshing(true);
-              fetchGroups();
-            }}
-            tintColor={colors.primary}
-            colors={[colors.primary]}
-          />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchGroups(); }} tintColor="#FFFFFF" />}
         ListEmptyComponent={
           !loading ? (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyEmoji}>👥</Text>
+              <View style={styles.emptyIconBox}>
+                <Users size={32} color="#FFFFFF" />
+              </View>
               <Text style={styles.emptyTitle}>No groups yet</Text>
-              <Text style={styles.emptyDesc}>
-                Create your first group to start splitting expenses with friends.
-              </Text>
+              <Text style={styles.emptyDesc}>Create your first group to start tracking shared expenses with friends.</Text>
             </View>
-          ) : null
+          ) : (
+            <ActivityIndicator color="#FFFFFF" style={{ marginTop: 80 }} />
+          )
         }
         renderItem={({ item }) => (
-          <Pressable
-            style={({ pressed }) => [
-              styles.card,
-              pressed && styles.cardPressed
-            ]}
-            onPress={() =>
-              navigation.navigate("GroupDetail", {
-                groupId: item.id,
-                groupName: item.name,
-              })
-            }
+          <PressableCard
+            style={styles.card}
+            onPress={() => navigation.navigate("GroupDetail", { groupId: item.id, groupName: item.name })}
           >
-            <View style={styles.cardHeader}>
-              <Text style={styles.groupName}>{item.name}</Text>
-              <Text style={styles.chevron}>›</Text>
+            <View style={styles.cardIconBox}>
+              <Users size={20} color="#FFFFFF" />
             </View>
-            {item.description ? (
-              <Text style={styles.groupDesc}>{item.description}</Text>
-            ) : null}
-            <Text style={styles.groupDate}>
-              Created {new Date(item.created || "").toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric'})}
-            </Text>
-          </Pressable>
+            <View style={styles.cardInfo}>
+              <Text style={styles.cardTitle}>{item.name}</Text>
+              <Text style={styles.cardSubtitle}>Settled up</Text>
+            </View>
+            <ChevronRight size={20} color={colors.textMuted} />
+          </PressableCard>
         )}
       />
 
-      <View style={styles.footer}>
-        {showNewGroup ? (
-          <View style={styles.newGroupForm}>
-            <Text style={styles.formTitle}>Create a New Group</Text>
-            <LabeledInput
-              label="Group Name"
-              value={newGroupName}
-              onChangeText={setNewGroupName}
-              placeholder="e.g. Goa Trip 2026"
-            />
-            <View style={styles.formActions}>
-              <PrimaryButton
-                title="Cancel"
-                variant="ghost"
-                onPress={() => {
-                  setShowNewGroup(false);
-                  setNewGroupName("");
-                }}
-                style={{ flex: 1, marginRight: spacing.sm }}
-              />
-              <PrimaryButton
-                title="Create"
-                onPress={handleCreateGroup}
-                loading={creating}
-                style={{ flex: 1 }}
-              />
-            </View>
+      {showNewGroup ? (
+        <View style={styles.bottomSheet}>
+          <Text style={styles.sheetTitle}>New Group</Text>
+          <Input value={newGroupName} onChangeText={setNewGroupName} placeholder="e.g. Ski Trip 2026" autoFocus />
+          <View style={styles.sheetActions}>
+            <Button title="Cancel" variant="secondary" style={styles.cancelBtn} onPress={() => { setShowNewGroup(false); setNewGroupName(""); Keyboard.dismiss(); }} />
+            <Button title="Create" loading={creating} style={{ flex: 1 }} onPress={handleCreateGroup} />
           </View>
-        ) : (
-          <PrimaryButton 
-            title="+ New Group" 
-            size="lg" 
-            onPress={() => setShowNewGroup(true)} 
-          />
-        )}
-      </View>
+        </View>
+      ) : (
+        <View style={styles.fabContainer}>
+          <Button title="" style={styles.fab} onPress={() => setShowNewGroup(true)} />
+          <View style={styles.fabIcon}>
+            <Plus color="#000" size={28} />
+          </View>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.md,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.surfaceBorder,
-  },
-  screenTitle: {
-    ...typography.h1,
-    color: colors.text,
-  },
-  profileBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.full,
-    backgroundColor: colors.surfaceHigh,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
-  },
-  profileEmoji: { fontSize: 20 },
-  
-  listContent: { 
-    padding: spacing.lg,
-    paddingBottom: spacing.xxl * 2,
-  },
-  
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.xl,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
-    ...shadows.md,
-  },
-  cardPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.98 }],
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: spacing.xs,
-  },
-  groupName: { ...typography.h3, color: colors.text },
-  chevron: { fontSize: 24, color: colors.textSecondary, marginTop: -4 },
-  groupDesc: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.sm },
-  groupDate: { ...typography.caption, color: colors.textMuted },
-  
-  emptyState: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: spacing.xxl * 1.5,
-    paddingHorizontal: spacing.xl,
-  },
-  emptyEmoji: { fontSize: 48, marginBottom: spacing.md },
-  emptyTitle: { ...typography.h2, color: colors.text, marginBottom: spacing.sm },
-  emptyDesc: { ...typography.body, color: colors.textSecondary, textAlign: "center", lineHeight: 22 },
-  
-  footer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: spacing.lg,
-    paddingBottom: spacing.xl,
-    backgroundColor: "rgba(15, 15, 26, 0.85)", // background color with opacity
-    borderTopWidth: 1,
-    borderTopColor: colors.surfaceBorder,
-  },
-  newGroupForm: {
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-    borderRadius: radius.xl,
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
-    ...shadows.lg,
-  },
-  formTitle: {
-    ...typography.h3,
-    color: colors.text,
-    marginBottom: spacing.md,
-  },
-  formActions: {
-    flexDirection: "row",
-    marginTop: spacing.xs,
-  }
+  header: { paddingHorizontal: 24, paddingTop: 64, paddingBottom: 16 },
+  title: { color: colors.textPrimary, fontSize: 36, fontWeight: "bold", letterSpacing: -1 },
+  listContent: { paddingHorizontal: 24, paddingBottom: 120 },
+  emptyState: { alignItems: "center", justifyContent: "center", paddingVertical: 80, marginTop: 40 },
+  emptyIconBox: { width: 64, height: 64, backgroundColor: colors.surface, borderRadius: 32, alignItems: "center", justifyContent: "center", marginBottom: 24 },
+  emptyTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: "bold", marginBottom: 8 },
+  emptyDesc: { color: colors.textSecondary, textAlign: "center", paddingHorizontal: 32, lineHeight: 24 },
+  card: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
+  cardIconBox: { width: 48, height: 48, backgroundColor: colors.border, borderRadius: 12, alignItems: "center", justifyContent: "center", marginRight: 16 },
+  cardInfo: { flex: 1 },
+  cardTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: "600", marginBottom: 4 },
+  cardSubtitle: { color: colors.textSecondary, fontSize: 14 },
+  bottomSheet: { position: "absolute", bottom: 96, left: 16, right: 16, backgroundColor: colors.secondaryBg, borderWidth: 1, borderColor: colors.border, padding: 24, paddingBottom: 24, borderRadius: 24, shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.5, shadowRadius: 20, elevation: 10 },
+  sheetTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: "bold", marginBottom: 16 },
+  sheetActions: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
+  cancelBtn: { flex: 1, marginRight: 16 },
+  fabContainer: { position: "absolute", bottom: 112, right: 24 },
+  fab: { width: 64, height: 64, borderRadius: 32, shadowColor: "#FFFFFF", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 5 },
+  fabIcon: { position: "absolute", top: 0, bottom: 0, left: 0, right: 0, alignItems: "center", justifyContent: "center", pointerEvents: "none" },
 });

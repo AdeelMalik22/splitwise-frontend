@@ -1,18 +1,11 @@
 import React, { useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { View, Text, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/RootNavigator";
 import { useAuth } from "../context/AuthContext";
-import LabeledInput from "../components/LabeledInput";
-import PrimaryButton from "../components/PrimaryButton";
-import { colors, spacing, radius, shadows, typography } from "../theme";
+import { Input } from "../components/ui/Input";
+import { Button } from "../components/ui/Button";
+import { colors } from "../theme";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
@@ -25,7 +18,7 @@ export default function LoginScreen({ navigation }: Props) {
 
   async function handleLogin() {
     if (!username || !password) {
-      setError("Enter both username and password.");
+      setError("Please enter your credentials.");
       return;
     }
     setError("");
@@ -33,7 +26,7 @@ export default function LoginScreen({ navigation }: Props) {
     try {
       await login(username.trim(), password);
     } catch (err: any) {
-      setError(err?.response?.data?.detail ?? "Invalid username or password.");
+      setError(err?.response?.data?.detail ?? "Invalid credentials.");
     } finally {
       setLoading(false);
     }
@@ -47,62 +40,49 @@ export default function LoginScreen({ navigation }: Props) {
       <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
       >
-        {/* Hero */}
-        <View style={styles.hero}>
-          <View style={styles.logoRing}>
-            <Text style={styles.logoEmoji}>💸</Text>
-          </View>
-          <Text style={styles.appName}>SplitWise</Text>
-          <Text style={styles.tagline}>Split bills, not friendships.</Text>
+        <View style={styles.header}>
+          <Text style={styles.title}>Welcome back.</Text>
+          <Text style={styles.subtitle}>Sign in to your account.</Text>
         </View>
 
-        {/* Card */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Welcome back</Text>
-          <Text style={styles.cardSubtitle}>Sign in to your account</Text>
-
+        <View style={styles.form}>
           {error ? (
-            <View style={styles.errorBanner}>
-              <Text style={styles.errorText}>⚠ {error}</Text>
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>{error}</Text>
             </View>
           ) : null}
 
-          <LabeledInput
-            label="Username"
+          <Input
+            label="USERNAME OR EMAIL"
             autoCapitalize="none"
             autoCorrect={false}
             value={username}
             onChangeText={setUsername}
-            placeholder="your_username"
+            placeholder="john.doe"
           />
-          <LabeledInput
-            label="Password"
+          <Input
+            label="PASSWORD"
             secureTextEntry
             value={password}
             onChangeText={setPassword}
             placeholder="••••••••"
           />
 
-          <PrimaryButton
-            title="Sign In"
+          <Button
+            title="Continue"
             onPress={handleLogin}
             loading={loading}
             size="lg"
-            style={{ marginTop: spacing.sm }}
+            style={{ marginTop: 24 }}
           />
         </View>
 
-        {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Don't have an account?</Text>
-          <PrimaryButton
-            title="Create Account"
+          <Button
+            title="Create an account"
             variant="ghost"
-            size="sm"
             onPress={() => navigation.navigate("Register")}
-            style={{ marginTop: spacing.sm }}
           />
         </View>
       </ScrollView>
@@ -111,88 +91,13 @@ export default function LoginScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  scroll: {
-    flexGrow: 1,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl,
-    justifyContent: "center",
-  },
-
-  // Hero
-  hero: {
-    alignItems: "center",
-    marginBottom: spacing.xl,
-    paddingTop: spacing.xxl,
-  },
-  logoRing: {
-    width: 80,
-    height: 80,
-    borderRadius: radius.full,
-    backgroundColor: "rgba(124,58,237,0.18)",
-    borderWidth: 1.5,
-    borderColor: "rgba(124,58,237,0.4)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: spacing.md,
-    ...shadows.md,
-  },
-  logoEmoji: { fontSize: 36 },
-  appName: {
-    ...typography.hero,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  tagline: {
-    ...typography.body,
-    color: colors.textSecondary,
-  },
-
-  // Card
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.xl,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
-    ...shadows.lg,
-  },
-  cardTitle: {
-    ...typography.h2,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  cardSubtitle: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginBottom: spacing.lg,
-  },
-
-  // Error
-  errorBanner: {
-    backgroundColor: "rgba(244,63,94,0.12)",
-    borderWidth: 1,
-    borderColor: "rgba(244,63,94,0.3)",
-    borderRadius: radius.md,
-    padding: spacing.sm + 2,
-    marginBottom: spacing.md,
-  },
-  errorText: {
-    color: colors.danger,
-    fontSize: 13,
-    fontWeight: "600",
-  },
-
-  // Footer
-  footer: {
-    alignItems: "center",
-    marginTop: spacing.xl,
-  },
-  footerText: {
-    color: colors.textSecondary,
-    fontSize: 14,
-  },
+  container: { flex: 1, backgroundColor: colors.background },
+  scroll: { flexGrow: 1, justifyContent: "center", paddingHorizontal: 32 },
+  header: { marginBottom: 48 },
+  title: { color: colors.textPrimary, fontSize: 36, fontWeight: "bold", letterSpacing: -1, marginBottom: 8 },
+  subtitle: { color: colors.textSecondary, fontSize: 18 },
+  form: { width: "100%" },
+  errorBox: { backgroundColor: "#EF444420", borderColor: "#EF444450", borderWidth: 1, padding: 16, borderRadius: 12, marginBottom: 24 },
+  errorText: { color: colors.error, fontWeight: "500" },
+  footer: { marginTop: 64, alignItems: "center" },
 });

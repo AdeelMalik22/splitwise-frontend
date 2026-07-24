@@ -1,11 +1,12 @@
 import React, { useCallback, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/RootNavigator";
 import { getSettlements } from "../api/expenses";
 import { SettlementsResponse } from "../types/models";
-import { colors, spacing } from "../theme";
+import { CheckCircle2 } from "lucide-react-native";
+import { colors } from "../theme";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Settlements">;
 
@@ -22,14 +23,12 @@ export default function SettlementsScreen({ route }: Props) {
           const data = await getSettlements(groupId);
           if (active) setSettlements(data);
         } catch {
-          Alert.alert("Error", "Could not load settlements.");
+          // Silent error
         } finally {
           if (active) setLoading(false);
         }
       })();
-      return () => {
-        active = false;
-      };
+      return () => { active = false; };
     }, [groupId])
   );
 
@@ -38,33 +37,57 @@ export default function SettlementsScreen({ route }: Props) {
   const allSettled = !loading && needToPay.length === 0 && willGet.length === 0;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: spacing.md }}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
+      <Text style={styles.title}>Balances</Text>
+
+      {loading && <ActivityIndicator color="#FFFFFF" style={{ marginTop: 80 }} />}
+
       {allSettled && (
-        <Text style={styles.empty}>Everyone's settled up. Nothing owed. 🎉</Text>
+        <View style={styles.emptyState}>
+          <View style={styles.emptyIconBox}>
+            <CheckCircle2 size={32} color={colors.success} />
+          </View>
+          <Text style={styles.emptyTitle}>All settled up</Text>
+          <Text style={styles.emptyDesc}>There are no outstanding balances in this group.</Text>
+        </View>
       )}
 
       {needToPay.length > 0 && (
-        <>
-          <Text style={styles.sectionTitle}>You need to pay</Text>
-          {needToPay.map((item, i) => (
-            <View key={i} style={[styles.card, styles.cardOwed]}>
-              <Text style={styles.line}>To: {item.to_user}</Text>
-              <Text style={styles.amount}>₹{item.amount}</Text>
-            </View>
-          ))}
-        </>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>You Owe</Text>
+          <View style={styles.card}>
+            {needToPay.map((item, i) => (
+              <View key={i} style={[styles.row, i !== needToPay.length - 1 && styles.borderBottom]}>
+                <View style={styles.rowLeft}>
+                  <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>{item.to_user ? item.to_user.charAt(0).toUpperCase() : "?"}</Text>
+                  </View>
+                  <Text style={styles.rowName}>{item.to_user}</Text>
+                </View>
+                <Text style={[styles.amount, { color: colors.error }]}>₹{item.amount}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
       )}
 
       {willGet.length > 0 && (
-        <>
-          <Text style={styles.sectionTitle}>You will receive</Text>
-          {willGet.map((item, i) => (
-            <View key={i} style={[styles.card, styles.cardGain]}>
-              <Text style={styles.line}>From: {item.from_user}</Text>
-              <Text style={styles.amount}>₹{item.amount}</Text>
-            </View>
-          ))}
-        </>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>You Are Owed</Text>
+          <View style={styles.card}>
+            {willGet.map((item, i) => (
+              <View key={i} style={[styles.row, i !== willGet.length - 1 && styles.borderBottom]}>
+                <View style={styles.rowLeft}>
+                  <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>{item.from_user ? item.from_user.charAt(0).toUpperCase() : "?"}</Text>
+                  </View>
+                  <Text style={styles.rowName}>{item.from_user}</Text>
+                </View>
+                <Text style={[styles.amount, { color: colors.success }]}>₹{item.amount}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
       )}
     </ScrollView>
   );
@@ -72,34 +95,20 @@ export default function SettlementsScreen({ route }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: colors.subtext,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    marginBottom: spacing.sm,
-    marginTop: spacing.md,
-  },
-  card: {
-    borderRadius: 12,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  cardOwed: {
-    backgroundColor: "#fff5f5",
-    borderColor: "#f5c6cb",
-  },
-  cardGain: {
-    backgroundColor: "#f0fff4",
-    borderColor: "#c3e6cb",
-  },
-  line: { fontSize: 15, color: colors.text, fontWeight: "600" },
-  amount: { fontSize: 16, color: colors.primaryDark, fontWeight: "700" },
-  empty: { textAlign: "center", color: colors.subtext, marginTop: spacing.xl, fontSize: 15 },
+  scroll: { paddingHorizontal: 24, paddingTop: 32, paddingBottom: 64 },
+  title: { color: colors.textPrimary, fontSize: 36, fontWeight: "bold", letterSpacing: -1, marginBottom: 32 },
+  emptyState: { alignItems: "center", justifyContent: "center", paddingVertical: 80, marginTop: 40 },
+  emptyIconBox: { width: 64, height: 64, backgroundColor: colors.surface, borderRadius: 32, alignItems: "center", justifyContent: "center", marginBottom: 24 },
+  emptyTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: "bold", marginBottom: 8 },
+  emptyDesc: { color: colors.textSecondary, textAlign: "center", paddingHorizontal: 32, lineHeight: 24 },
+  section: { marginBottom: 40 },
+  sectionTitle: { color: colors.textSecondary, fontSize: 12, textTransform: "uppercase", letterSpacing: 1, fontWeight: "bold", marginBottom: 16 },
+  card: { backgroundColor: colors.surface, borderRadius: 16, borderWidth: 1, borderColor: colors.border, overflow: "hidden" },
+  row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 20 },
+  borderBottom: { borderBottomWidth: 1, borderBottomColor: colors.border },
+  rowLeft: { flexDirection: "row", alignItems: "center" },
+  avatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.border, alignItems: "center", justifyContent: "center", marginRight: 16 },
+  avatarText: { color: colors.textPrimary, fontSize: 18, fontWeight: "bold" },
+  rowName: { color: colors.textPrimary, fontSize: 16, fontWeight: "600" },
+  amount: { fontSize: 18, fontWeight: "bold" },
 });
-
