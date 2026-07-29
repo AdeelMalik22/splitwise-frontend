@@ -8,7 +8,12 @@ import DashboardScreen from "../screens/DashboardScreen";
 import GroupListScreen from "../screens/GroupListScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 
-const Tab = createBottomTabNavigator();
+type TabParamList = {
+  DashboardTab: undefined;
+  GroupsTab: undefined;
+  ProfileTab: undefined;
+};
+const Tab = createBottomTabNavigator<TabParamList>();
 
 export default function TabNavigator() {
   return (
@@ -21,9 +26,9 @@ export default function TabNavigator() {
           left: 24,
           right: 24,
           elevation: 0,
-          backgroundColor: "rgba(17, 17, 17, 0.85)",
+          backgroundColor: "rgba(255, 255, 255, 0.94)",
           borderWidth: 1,
-          borderColor: "rgba(255, 255, 255, 0.1)",
+          borderColor: "#E5E8DF",
           borderRadius: 32,
           height: 64,
           paddingBottom: 0,
@@ -36,30 +41,31 @@ export default function TabNavigator() {
             className="rounded-[32px] overflow-hidden"
           />
         ),
-        tabBarShowLabel: false,
-        tabBarActiveTintColor: "#FFFFFF",
-        tabBarInactiveTintColor: "#737373",
+        tabBarShowLabel: true,
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "700", marginBottom: 5 },
+        tabBarActiveTintColor: "#17231D",
+        tabBarInactiveTintColor: "#A3ADA6",
       }}
     >
       <Tab.Screen
         name="DashboardTab"
-        component={DashboardScreen}
+        component={DashboardScreen as any}
         options={{
-          tabBarIcon: ({ color, size }) => <Home color={color} size={24} />,
+          tabBarLabel: "Overview", tabBarIcon: ({ color }) => <Home color={color} size={21} />,
         }}
       />
       <Tab.Screen
         name="GroupsTab"
-        component={GroupListScreen}
+        component={GroupListScreen as any}
         options={{
-          tabBarIcon: ({ color, size }) => <Users color={color} size={24} />,
+          tabBarLabel: "Groups", tabBarIcon: ({ color }) => <Users color={color} size={21} />,
         }}
       />
       <Tab.Screen
         name="ProfileTab"
         component={ProfileScreen}
         options={{
-          tabBarIcon: ({ color, size }) => <UserCircle color={color} size={24} />,
+          tabBarLabel: "Profile", tabBarIcon: ({ color }) => <UserCircle color={color} size={21} />,
         }}
       />
     </Tab.Navigator>

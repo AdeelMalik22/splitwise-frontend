@@ -8,7 +8,7 @@ import { Group } from "../types/models";
 import { Button } from "../components/ui/Button";
 import { PressableCard } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
-import { Users, ChevronRight, Plus } from "lucide-react-native";
+import { Users, ChevronRight, Plus, Search } from "lucide-react-native";
 import { colors } from "../theme";
 
 type Props = NativeStackScreenProps<RootStackParamList, "GroupList">;
@@ -58,7 +58,9 @@ export default function GroupListScreen({ navigation }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <Text style={styles.kicker}>YOUR SHARED SPACES</Text>
         <Text style={styles.title}>Groups</Text>
+        <Text style={styles.subtitle}>Keep every trip, home and dinner in sync.</Text>
       </View>
 
       <FlatList
@@ -89,7 +91,7 @@ export default function GroupListScreen({ navigation }: Props) {
             </View>
             <View style={styles.cardInfo}>
               <Text style={styles.cardTitle}>{item.name}</Text>
-              <Text style={styles.cardSubtitle}>Settled up</Text>
+              <Text style={styles.cardSubtitle}>{item.description || "Shared expenses"}</Text>
             </View>
             <ChevronRight size={20} color={colors.textMuted} />
           </PressableCard>
@@ -119,15 +121,17 @@ export default function GroupListScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { paddingHorizontal: 24, paddingTop: 64, paddingBottom: 16 },
-  title: { color: colors.textPrimary, fontSize: 36, fontWeight: "bold", letterSpacing: -1 },
+  header: { paddingHorizontal: 20, paddingTop: 52, paddingBottom: 18 },
+  kicker: { color: colors.accentDark, fontSize: 11, fontWeight: "800", letterSpacing: 1, marginBottom: 12 },
+  title: { color: colors.textPrimary, fontSize: 38, fontWeight: "800", letterSpacing: -1 },
+  subtitle: { color: colors.textSecondary, fontSize: 15, marginTop: 8 },
   listContent: { paddingHorizontal: 24, paddingBottom: 120 },
   emptyState: { alignItems: "center", justifyContent: "center", paddingVertical: 80, marginTop: 40 },
   emptyIconBox: { width: 64, height: 64, backgroundColor: colors.surface, borderRadius: 32, alignItems: "center", justifyContent: "center", marginBottom: 24 },
   emptyTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: "bold", marginBottom: 8 },
   emptyDesc: { color: colors.textSecondary, textAlign: "center", paddingHorizontal: 32, lineHeight: 24 },
-  card: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
-  cardIconBox: { width: 48, height: 48, backgroundColor: colors.border, borderRadius: 12, alignItems: "center", justifyContent: "center", marginRight: 16 },
+  card: { flexDirection: "row", alignItems: "center", marginBottom: 12, padding: 16 },
+  cardIconBox: { width: 48, height: 48, backgroundColor: colors.accent, borderRadius: 16, alignItems: "center", justifyContent: "center", marginRight: 16 },
   cardInfo: { flex: 1 },
   cardTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: "600", marginBottom: 4 },
   cardSubtitle: { color: colors.textSecondary, fontSize: 14 },

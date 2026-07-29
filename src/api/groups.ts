@@ -1,5 +1,5 @@
 import { api } from "./client";
-import { Group } from "../types/models";
+import { Group, User } from "../types/models";
 
 export async function listGroups() {
   const { data } = await api.get<Group[]>("/groups/");
@@ -27,4 +27,3 @@ export async function getGroupUsers(groupId: number) {
   const { data } = await api.get<User[]>(`/usersgroup/${groupId}/users/`);
   return data;
 }
-

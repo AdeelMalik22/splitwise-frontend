@@ -9,7 +9,7 @@ export default function App() {
     <View style={styles.root}>
       <View style={styles.container}>
         <AuthProvider>
-          <StatusBar style="light" />
+          <StatusBar style="dark" />
           <RootNavigator />
         </AuthProvider>
       </View>
@@ -20,17 +20,17 @@ export default function App() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#000000",
+    backgroundColor: "#F7F8F4",
     alignItems: "center",
   },
   container: {
     flex: 1,
     width: "100%",
     maxWidth: Platform.OS === "web" ? 500 : undefined,
-    backgroundColor: "#000000",
+    backgroundColor: "#F7F8F4",
     overflow: "hidden",
     borderLeftWidth: Platform.OS === "web" ? 1 : 0,
     borderRightWidth: Platform.OS === "web" ? 1 : 0,
-    borderColor: "#202020",
+    borderColor: "#E5E8DF",
   },
 });

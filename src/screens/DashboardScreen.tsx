@@ -9,7 +9,7 @@ import { Expense } from "../types/models";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/ui/Button";
 import { PressableCard } from "../components/ui/Card";
-import { ArrowUpRight, ArrowDownLeft, Receipt } from "lucide-react-native";
+import { ArrowUpRight, ArrowDownLeft, Receipt, Plus, Sparkles } from "lucide-react-native";
 import { colors } from "../theme";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Dashboard">;
@@ -73,7 +73,9 @@ export default function DashboardScreen({ navigation }: Props) {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
       <View style={styles.header}>
-        <Text style={styles.headerLabel}>Total Balance</Text>
+        <View style={styles.eyebrow}><Sparkles size={14} color={colors.accentDark} /><Text style={styles.eyebrowText}>YOUR MONEY, SIMPLIFIED</Text></View>
+        <Text style={styles.greeting}>Good to see you</Text>
+        <Text style={styles.headerLabel}>Total balance</Text>
         <Text style={styles.headerValue}>
           {totalBalance > 0 ? "+" : totalBalance < 0 ? "-" : ""}₹{Math.abs(totalBalance).toFixed(2)}
         </Text>
@@ -102,10 +104,10 @@ export default function DashboardScreen({ navigation }: Props) {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <Text style={styles.sectionTitle}>Quick actions</Text>
         <View style={styles.actionsRow}>
-          <Button title="Settle Up" variant="secondary" onPress={() => navigation.navigate("GroupsTab" as any)} style={styles.actionBtn} />
-          <Button title="Create Group" variant="secondary" onPress={() => navigation.navigate("GroupsTab" as any)} style={styles.actionBtn2} />
+          <Button title="Settle up" variant="secondary" onPress={() => navigation.navigate("GroupsTab" as any)} style={styles.actionBtn} />
+          <Button title="New group" variant="primary" onPress={() => navigation.navigate("GroupsTab" as any)} style={styles.actionBtn2} />
         </View>
       </View>
 
@@ -139,18 +141,21 @@ export default function DashboardScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  scroll: { paddingHorizontal: 24, paddingTop: 64, paddingBottom: 100 },
-  header: { marginBottom: 40 },
-  headerLabel: { color: colors.textSecondary, fontSize: 14, textTransform: "uppercase", letterSpacing: 1, fontWeight: "bold", marginBottom: 8 },
-  headerValue: { color: colors.textPrimary, fontSize: 48, fontWeight: "bold", letterSpacing: -1 },
+  scroll: { paddingHorizontal: 20, paddingTop: 52, paddingBottom: 130 },
+  header: { marginBottom: 28 },
+  eyebrow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 18 },
+  eyebrowText: { color: colors.accentDark, fontSize: 11, fontWeight: "800", letterSpacing: 1 },
+  greeting: { color: colors.textPrimary, fontSize: 30, fontWeight: "800", letterSpacing: -0.8, marginBottom: 28 },
+  headerLabel: { color: colors.textSecondary, fontSize: 13, fontWeight: "700", marginBottom: 6 },
+  headerValue: { color: colors.textPrimary, fontSize: 48, fontWeight: "800", letterSpacing: -1 },
   balancesRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 40 },
-  balanceBox: { flex: 1, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 20 },
+  balanceBox: { flex: 1, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 20, padding: 16 },
   balanceBoxHeader: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
   iconCircle: { width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center", marginRight: 12 },
   balanceLabel: { color: colors.textSecondary, fontSize: 12, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 },
   balanceValue: { fontSize: 24, fontWeight: "bold" },
   section: { marginBottom: 40 },
-  sectionTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: "bold", marginBottom: 20 },
+  sectionTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: "800", marginBottom: 16 },
   actionsRow: { flexDirection: "row", justifyContent: "space-between" },
   actionBtn: { flex: 1, marginRight: 16 },
   actionBtn2: { flex: 1 },

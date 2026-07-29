@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   header: { alignItems: "center", marginBottom: 40 },
   avatar: { width: 96, height: 96, borderRadius: 48, backgroundColor: colors.border, alignItems: "center", justifyContent: "center", marginBottom: 24 },
   avatarText: { color: colors.textPrimary, fontSize: 36, fontWeight: "bold" },
-  name: { color: colors.textPrimary, fontSize: 36, fontWeight: "bold", tracking: -1, marginBottom: 8 },
+  name: { color: colors.textPrimary, fontSize: 36, fontWeight: "bold", letterSpacing: -1, marginBottom: 8 },
   username: { color: colors.textSecondary, fontSize: 16 },
   sectionLabel: { color: colors.textSecondary, fontSize: 12, textTransform: "uppercase", letterSpacing: 1, fontWeight: "bold", marginBottom: 12, marginLeft: 8 },
   card: { padding: 0, marginBottom: 32, overflow: "hidden" },

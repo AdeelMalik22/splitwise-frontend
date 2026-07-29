@@ -58,15 +58,15 @@ const styles = StyleSheet.create({
   md: { paddingVertical: 12, paddingHorizontal: 24 },
   lg: { paddingVertical: 16, paddingHorizontal: 32 },
   
-  primary: { backgroundColor: "#FFFFFF" },
-  secondary: { backgroundColor: "transparent", borderWidth: 1, borderColor: colors.border },
+  primary: { backgroundColor: colors.ink },
+  secondary: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   ghost: { backgroundColor: "transparent" },
   danger: { backgroundColor: colors.error },
 
   textBase: { fontWeight: "600" },
-  text_primary: { color: "#000000" },
-  text_secondary: { color: "#FFFFFF", fontWeight: "500" },
-  text_ghost: { color: "#FFFFFF", fontWeight: "500" },
+  text_primary: { color: "#FFFFFF" },
+  text_secondary: { color: colors.ink, fontWeight: "600" },
+  text_ghost: { color: colors.ink, fontWeight: "600" },
   text_danger: { color: "#FFFFFF" },
 
   text_sm: { fontSize: 14 },
