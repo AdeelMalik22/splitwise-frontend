@@ -35,7 +35,7 @@ export default function TabNavigator() {
         },
         tabBarBackground: () => (
           <BlurView
-            tint="dark"
+            tint="light"
             intensity={80}
             style={StyleSheet.absoluteFillObject}
             className="rounded-[32px] overflow-hidden"

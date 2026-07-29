@@ -9,7 +9,7 @@ import { Expense } from "../types/models";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/ui/Button";
 import { PressableCard } from "../components/ui/Card";
-import { ArrowUpRight, ArrowDownLeft, Receipt, Plus, Sparkles } from "lucide-react-native";
+import { ArrowUpRight, ArrowDownLeft, Receipt, Menu, Bell } from "lucide-react-native";
 import { colors } from "../theme";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Dashboard">;
@@ -19,6 +19,7 @@ export default function DashboardScreen({ navigation }: Props) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [youOwe, setYouOwe] = useState(0);
   const [youAreOwed, setYouAreOwed] = useState(0);
+  const [groupsCount, setGroupsCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useFocusEffect(
@@ -32,6 +33,7 @@ export default function DashboardScreen({ navigation }: Props) {
 
           // 2. Fetch all groups to aggregate balances
           const groups = await listGroups();
+          if (active) setGroupsCount(groups.length);
           let totalOwe = 0;
           let totalOwed = 0;
 
@@ -72,13 +74,14 @@ export default function DashboardScreen({ navigation }: Props) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
+      <View style={styles.topbar}><Menu size={22} color={colors.textPrimary} /><Text style={styles.topbarTitle}>Home</Text><Bell size={21} color={colors.textPrimary} /></View>
       <View style={styles.header}>
-        <View style={styles.eyebrow}><Sparkles size={14} color={colors.accentDark} /><Text style={styles.eyebrowText}>YOUR MONEY, SIMPLIFIED</Text></View>
-        <Text style={styles.greeting}>Good to see you</Text>
-        <Text style={styles.headerLabel}>Total balance</Text>
-        <Text style={styles.headerValue}>
-          {totalBalance > 0 ? "+" : totalBalance < 0 ? "-" : ""}₹{Math.abs(totalBalance).toFixed(2)}
-        </Text>
+        <View style={styles.heroCard}>
+          <Text style={styles.heroLabel}>{youAreOwed > 0 ? "You are owed" : "You owe"}</Text>
+          <Text style={styles.heroValue}>₹{Math.abs(totalBalance).toLocaleString("en-IN", { maximumFractionDigits: 0 })}</Text>
+          <Text style={styles.heroMeta}>from {groupsCount} people</Text>
+          <Button title="Settle up" variant="secondary" onPress={() => navigation.navigate("GroupsTab" as any)} style={styles.heroButton} />
+        </View>
       </View>
 
       <View style={styles.balancesRow}>
@@ -104,15 +107,15 @@ export default function DashboardScreen({ navigation }: Props) {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Quick actions</Text>
+        <Text style={styles.sectionTitle}>Overview</Text>
         <View style={styles.actionsRow}>
-          <Button title="Settle up" variant="secondary" onPress={() => navigation.navigate("GroupsTab" as any)} style={styles.actionBtn} />
-          <Button title="New group" variant="primary" onPress={() => navigation.navigate("GroupsTab" as any)} style={styles.actionBtn2} />
+          <Button title="Total balance" variant="secondary" onPress={() => undefined} style={styles.actionBtn} />
+          <Button title="Total spent" variant="secondary" onPress={() => undefined} style={styles.actionBtn2} />
         </View>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Recent Activity</Text>
+        <Text style={styles.sectionTitle}>Recent activity</Text>
         {loading ? (
           <ActivityIndicator color={colors.textPrimary} style={{ marginTop: 20 }} />
         ) : expenses.length === 0 ? (
@@ -142,10 +145,14 @@ export default function DashboardScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   scroll: { paddingHorizontal: 20, paddingTop: 52, paddingBottom: 130 },
-  header: { marginBottom: 28 },
-  eyebrow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 18 },
-  eyebrowText: { color: colors.accentDark, fontSize: 11, fontWeight: "800", letterSpacing: 1 },
-  greeting: { color: colors.textPrimary, fontSize: 30, fontWeight: "800", letterSpacing: -0.8, marginBottom: 28 },
+  topbar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 },
+  topbarTitle: { color: colors.textPrimary, fontSize: 18, fontWeight: "800" },
+  header: { marginBottom: 24 },
+  heroCard: { backgroundColor: colors.ink, borderRadius: 14, padding: 20, minHeight: 146 },
+  heroLabel: { color: "#FFFFFF", fontSize: 12, marginBottom: 8 },
+  heroValue: { color: "#FFFFFF", fontSize: 32, fontWeight: "800" },
+  heroMeta: { color: "#FFFFFF", fontSize: 12, marginTop: 8 },
+  heroButton: { position: "absolute", right: 16, top: 42, borderColor: "#FFFFFF", backgroundColor: "#FFFFFF", paddingVertical: 10, paddingHorizontal: 16 },
   headerLabel: { color: colors.textSecondary, fontSize: 13, fontWeight: "700", marginBottom: 6 },
   headerValue: { color: colors.textPrimary, fontSize: 48, fontWeight: "800", letterSpacing: -1 },
   balancesRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 40 },
