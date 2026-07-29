@@ -29,10 +29,10 @@ const MyDarkTheme = {
   ...DarkTheme,
   colors: {
     ...DarkTheme.colors,
-    background: "#F7F8F4",
+    background: "#FFFFFF",
     card: "#FFFFFF",
-    text: "#17231D",
-    border: "#E5E8DF",
+    text: "#111111",
+    border: "#E5E5E5",
   },
 };
 
@@ -41,8 +41,8 @@ export default function RootNavigator() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, backgroundColor: "#F7F8F4", justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#17231D" />
+      <View style={{ flex: 1, backgroundColor: "#FFFFFF", justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#111111" />
       </View>
     );
   }
@@ -51,8 +51,8 @@ export default function RootNavigator() {
     <NavigationContainer theme={MyDarkTheme}>
       <Stack.Navigator
         screenOptions={{
-          headerStyle: { backgroundColor: "#F7F8F4" },
-          headerTintColor: "#17231D",
+          headerStyle: { backgroundColor: "#FFFFFF" },
+          headerTintColor: "#111111",
           headerTitleStyle: { fontWeight: "700" },
           headerShadowVisible: false,
           headerBackTitleVisible: false,

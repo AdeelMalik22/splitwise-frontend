@@ -28,7 +28,7 @@ export default function TabNavigator() {
           elevation: 0,
           backgroundColor: "rgba(255, 255, 255, 0.94)",
           borderWidth: 1,
-          borderColor: "#E5E8DF",
+          borderColor: "#E5E5E5",
           borderRadius: 32,
           height: 64,
           paddingBottom: 0,
@@ -43,7 +43,7 @@ export default function TabNavigator() {
         ),
         tabBarShowLabel: true,
         tabBarLabelStyle: { fontSize: 11, fontWeight: "700", marginBottom: 5 },
-        tabBarActiveTintColor: "#17231D",
+        tabBarActiveTintColor: "#111111",
         tabBarInactiveTintColor: "#A3ADA6",
       }}
     >

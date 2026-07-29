@@ -20,17 +20,17 @@ export default function App() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#F7F8F4",
+    backgroundColor: "#000000",
     alignItems: "center",
   },
   container: {
     flex: 1,
     width: "100%",
     maxWidth: Platform.OS === "web" ? 500 : undefined,
-    backgroundColor: "#F7F8F4",
+    backgroundColor: "#FFFFFF",
     overflow: "hidden",
     borderLeftWidth: Platform.OS === "web" ? 1 : 0,
     borderRightWidth: Platform.OS === "web" ? 1 : 0,
-    borderColor: "#E5E8DF",
+    borderColor: "#E5E5E5",
   },
 });
